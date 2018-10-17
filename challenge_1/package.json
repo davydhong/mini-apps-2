@@ -1,0 +1,31 @@
+{
+  "name": "history-browser",
+  "version": "0.0.1",
+  "description": "Browse History",
+  "main": "client/source/index.js",
+  "dependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/preset-react": "^7.0.0",
+    "axios": "^0.18.0",
+    "babel-loader": "^8.0.4",
+    "json-server": "^0.14.0",
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
+    "react-hot-loader": "^4.3.11",
+    "react-materialize": "^2.4.6",
+    "react-paginate": "^5.2.4",
+    "react-router-dom": "^4.3.1",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-middleware": "^3.4.0",
+    "webpack-hot-middleware": "^2.24.3",
+    "webpack-merge": "^4.1.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start-server": "json-server --watch data/db.json"
+  },
+  "author": "",
+  "license": "ISC"
+}
