@@ -4,7 +4,7 @@ import { hot } from 'react-hot-loader';
 
 const Header = () => {
   return (
-    <Navbar brand="now.io" right>
+    <Navbar brand="History Search" right>
       <NavItem href="get-started.html">
         <Icon>search</Icon>
       </NavItem>

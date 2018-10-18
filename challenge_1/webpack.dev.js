@@ -20,7 +20,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.jsx?/,
+        test: /\.js(x)?/,
         include: SRC_DIR,
         use: {
           loader: 'babel-loader',

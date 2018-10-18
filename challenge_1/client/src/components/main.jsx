@@ -1,16 +1,26 @@
 import React, { Component } from 'react';
 import { hot } from 'react-hot-loader';
 import Header from './header.jsx';
-import { Button, Icon, Collection, CollectionItem, Badge, Pagination } from 'react-materialize';
+import { Collection, CollectionItem, Badge } from 'react-materialize';
 import axios from 'axios';
-import ReactPaginate from 'react-paginate';
-import KeyboardEventHandler from 'react-keyboard-event-handler';
+import Pginate from './pagination.jsx';
+import KeyboardControl from './keyboardControl.jsx';
+import Search from './search.jsx';
 
-var getPageData = (pageNumber, requestLimit, callback) => {
-  axios.get(`http://localhost:3000/api/events?_page=${pageNumber}&_limit=${requestLimit}`).then(data => {
+// ************************
+//    Helper Functions
+// ************************
+const getPageData = (keyword, pageNumber, requestLimit, callback) => {
+  axios.get(`http://localhost:3000/api/events?q=${keyword}&_page=${pageNumber}&_limit=${requestLimit}`).then(data => {
     callback(data);
   });
 };
+
+const getMaxPage = str =>
+  str
+    .split(',')[2]
+    .split('page=')[1]
+    .split('&_limit')[0];
 
 class Main extends Component {
   constructor() {
@@ -18,26 +28,35 @@ class Main extends Component {
     this.state = {
       currentPage: 1,
       itemsPerPage: 10,
+      searchKeyword: '',
       infoOnPage: undefined,
       totalPages: undefined
     };
-    getPageData(this.state.currentPage, this.state.itemsPerPage, ({ data, headers: { link } }) => {
-      console.log('Link', link.split(','));
-      // some janky way of extracting the last page info from header
-      var maxPage = link
-        .split(',')[2]
-        .split('page=')[1]
-        .split('&_limit')[0];
-      console.log({ maxPage });
+    getPageData(this.state.searchKeyword, this.state.currentPage, this.state.itemsPerPage, ({ data, headers: { link } }) => {
+      // extracting the last page info from header
+      let maxPage = getMaxPage(link);
       this.setState({ infoOnPage: data, totalPage: maxPage });
     });
     this.handleChangePage = this.handleChangePage.bind(this);
+    this.handleSearch = this.handleSearch.bind(this);
   }
+  // ************************
+  //      Event Handles
+  // ************************
 
+  handleSearch(event) {
+    let searchText = event.target.value;
+    this.setState({ searchKeyword: searchText });
+    getPageData(this.state.searchKeyword, this.state.currentPage, this.state.itemsPerPage, ({ data, headers: { link } }) => {
+      // extracting the last page info from header
+      let maxPage = getMaxPage(link);
+      console.log({ data, maxPage });
+      this.setState({ infoOnPage: data, totalPage: maxPage });
+    });
+  }
   handleChangePage(event) {
-    console.log(event);
-    this.setState({ currentPage: event.selected }, () => {
-      getPageData(this.state.currentPage, this.state.itemsPerPage, ({ data, headers: { link } }) => {
+    this.setState({ currentPage: event.selected ? event.selected : event }, () => {
+      getPageData(this.state.searchKeyword, this.state.currentPage, this.state.itemsPerPage, ({ data }) => {
         this.setState({ infoOnPage: data });
       });
     });
@@ -48,14 +67,11 @@ class Main extends Component {
       <React.Fragment>
         <Header />
 
-        <KeyboardEventHandler
-          handleKeys={['all']}
-          onKeyEvent={key => {
-            console.log(key);
-            // props.setEventKey(key);
-          }}
-        />
-
+        <KeyboardControl handleChangePage={this.handleChangePage} currentPage={this.state.currentPage} />
+        <Search handleSearch={this.handleSearch} />
+        {/***********************
+        //     Content Section
+        // ************************/}
         <Collection id="info-container">
           {this.state.infoOnPage
             ? this.state.infoOnPage.map(({ date, description, lang, category1, category2, granularity }, idx) => (
@@ -66,17 +82,10 @@ class Main extends Component {
               ))
             : null}
         </Collection>
-
-        <ReactPaginate previousLabel={'previous'} nextLabel={'next'} breakLabel={<a href="">...</a>} breakClassName={'break-me'} pageCount={this.state.totalPage ? this.state.totalPage : 20} marginPagesDisplayed={2} pageRangeDisplayed={5} onPageChange={this.handleChangePage} containerClassName={'pagination'} subContainerClassName={'pages pagination'} activeClassName={'active'} />
+        <Pginate currentPage={this.state.currentPage} totalPage={this.state.totalPage} handleChangePage={this.handleChangePage} />
       </React.Fragment>
     );
   }
 }
-// <Button waves="light">
-// EDIT ME<Icon left>save</Icon>
-// </Button>
-
-/*
-{"date": "-298", "description": "The Samnites defeat the Romans under Lucius Cornelius Scipio Barbatus in the Battle of Camerinum, first battle of the Third Samnite War.", "lang": "en", "category1": "By place", "category2": "Roman Republic", "granularity": "year"} */
 
 export default hot(module)(Main);
